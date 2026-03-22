@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClearLine Logistics LLC</title>
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-gray-50 to-white text-gray-900">
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function App() {
+      return (
+        <div className="min-h-screen">
+          {/* Header / Nav */}
+          <header className="sticky top-0 z-30 bg-white/60 backdrop-blur-md shadow-sm">
+            <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center text-white font-bold text-lg">CL</div>
+                <div>
+                  <h1 className="text-lg font-semibold">ClearLine Logistics LLC</h1>
+                  <p className="text-xs text-gray-500">Freight Broker • Reliable • On-time</p>
+                </div>
+              </div>
+              <ul className="hidden md:flex gap-6 items-center">
+                <li><a href="#home" className="text-gray-700 hover:text-black text-sm font-medium">Home</a></li>
+                <li><a href="#services" className="text-gray-700 hover:text-black text-sm font-medium">Services</a></li>
+                <li><a href="#about" className="text-gray-700 hover:text-black text-sm font-medium">About Us</a></li>
+                <li><a href="#contact" className="text-gray-700 hover:text-black text-sm font-medium">Contact Us</a></li>
+                <li>
+  <a 
+    href="https://clearline.llc/Generate.html" 
+    className="text-gray-700 hover:text-black text-sm font-medium"
+  >
+    Generator
+  </a>
+</li> 
+              </ul>
+              <div className="md:hidden">
+                <a href="#contact" className="px-3 py-2 rounded-md bg-blue-600 text-white text-sm font-medium">Get Quote</a>
+              </div>
+            </nav>
+          </header>
+
+          {/* Main content */}
+          <main className="max-w-6xl mx-auto px-6 py-12">
+            {/* Home Section */}
+            <section id="home" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-bold leading-tight">ClearLine Logistics — Freight brokerage made easy</h2>
+                <p className="mt-6 text-gray-600 max-w-xl">
+                  We connect shippers with vetted carriers across the United States. Fast quotes, transparent pricing, and dedicated support — so your goods arrive on time.
+                </p>
+                <div className="mt-8 flex gap-4">
+                  <a href="#contact" className="inline-flex items-center gap-2 px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold shadow hover:shadow-lg">Request a Quote</a>
+                  <a href="#services" className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">Our Services</a>
+                </div>
+              </div>
+              <div className="rounded-2xl overflow-hidden shadow-2xl">
+                <img src="https://wallscloud.net/img/resize/1600/900/MM/2021-11-19-doroga-put-kanada-gruzovik-daimler-tazelyj-kompaktnyj.jpg" alt="Semi truck on highway" className="w-full h-80 object-cover"/>
+              </div>
+            </section>
+
+            {/* Services Section */}
+            <section id="services" className="mt-16">
+              <h3 className="text-2xl font-semibold">Services</h3>
+              <p className="text-gray-600 mt-2">We tailor solutions for shippers, carriers, and manufacturers.</p>
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-xl bg-white shadow-sm border border-gray-100">
+                  <h4 className="font-semibold text-lg">Brokerage & Load Matching</h4>
+                  <p className="mt-3 text-gray-600 text-sm">Fast load matching, competitive rates, and carrier vetting.</p>
+                  <div className="mt-4"><a href="#contact" className="text-sm font-medium text-blue-600">Get started →</a></div>
+                </div>
+                <div className="p-6 rounded-xl bg-white shadow-sm border border-gray-100">
+                  <h4 className="font-semibold text-lg">Dedicated Account Support</h4>
+                  <p className="mt-3 text-gray-600 text-sm">A single point of contact for every shipment.</p>
+                  <div className="mt-4"><a href="#contact" className="text-sm font-medium text-blue-600">Get started →</a></div>
+                </div>
+                <div className="p-6 rounded-xl bg-white shadow-sm border border-gray-100">
+                  <h4 className="font-semibold text-lg">Route Optimization & Tracking</h4>
+                  <p className="mt-3 text-gray-600 text-sm">Real-time status updates and route planning.</p>
+                  <div className="mt-4"><a href="#contact" className="text-sm font-medium text-blue-600">Get started →</a></div>
+                </div>
+              </div>
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <img src="https://www.wilmarinc.com/hs-fs/hubfs/AdobeStock_627614157-1.jpeg?width=2400&height=1600&name=AdobeStock_627614157-1.jpeg" alt="truck 1" className="rounded-lg shadow-md object-cover h-48 w-full"/>
+                <img src="https://iili.io/fDnMEs2.png" alt="truck 2" className="rounded-lg shadow-md object-cover h-48 w-full"/>
+                <img src="https://iili.io/fDnNMjn.png" alt="truck 3" className="rounded-lg shadow-md object-cover h-48 w-full"/>
+              </div>
+            </section>
+
+            {/* About Section */}
+            <section id="about" className="mt-16 bg-gradient-to-tr from-white to-gray-50 p-8 rounded-2xl border border-gray-100">
+              <div className="md:flex md:items-center md:gap-8">
+                <div className="md:w-1/2">
+                  <h3 className="text-2xl font-semibold">About ClearLine</h3>
+                  <p className="text-gray-600 mt-3">
+                    ClearLine Logistics LLC is a US-based freight brokerage focused on transparency and dependable service. We partner with trusted carriers and provide end-to-end support from pickup to delivery.
+                  </p>
+                  <ul className="mt-4 space-y-2 text-sm text-gray-600">
+                    <li>• Carrier vetting & compliance</li>
+                    <li>• Competitive rate negotiation</li>
+                    <li>• Real-time tracking & reporting</li>
+                  </ul>
+                </div>
+                <div className="mt-6 md:mt-0 md:w-1/2">
+                  <div className="rounded-xl overflow-hidden shadow-inner">
+                    <img src="https://iili.io/fDnMEs2.png" alt="about truck" className="w-full h-56 object-cover"/>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Contact Section */}
+<section id="contact" className="mt-16">
+  <h3 className="text-2xl font-semibold">Contact Us</h3>
+  <p className="text-gray-600 mt-2">Email, call, or send a quick message — we’ll get back to you within one business day.</p>
+  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    
+    {/* Left Side: Contact Info */}
+    <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
+      <h4 className="font-semibold">Get a Quick Quote</h4>
+      <p className="text-sm text-gray-600 mt-2">Send shipment details to:</p>
+      <p className="mt-3 font-medium">contact@clearline.llc</p>
+      <div className="mt-6">
+        <a href="mailto:contact@clearline.llc" className="inline-block px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold">Email Us</a>
+      </div>
+      <div className="mt-6 text-sm text-gray-500">Phone: <span className="font-medium">+1 (555) 123-4567</span></div>
+    </div>
+
+    {/* Right Side: Functional Formspree Form */}
+    {/* STEP 1: Replace 'your-id-here' with the ID you get from Formspree.io */}
+    <form 
+      action="https://formspree.io/f/xqedgawd" 
+      method="POST" 
+      className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm"
+    >
+      <label className="block text-sm font-medium text-gray-700">Your Name</label>
+      <input 
+        type="text" 
+        name="full_name" 
+        required 
+        className="mt-1 w-full rounded-md border border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-blue-500 outline-none" 
+        placeholder="Full name" 
+      />
+
+      <label className="block text-sm font-medium text-gray-700 mt-4">Email Address</label>
+      <input 
+        type="email" 
+        name="email" 
+        required 
+        className="mt-1 w-full rounded-md border border-gray-300 shadow-sm p-2 focus:ring-2 focus:ring-blue-500 outline-none" 
+        placeholder="you@company.com" 
+      />
+
+      <label className="block text-sm font-medium text-gray-700 mt-4">Message / Shipment Details</label>
+      <textarea 
+        name="message" 
+        required 
+        className="mt-1 w-full rounded-md border border-gray-300 shadow-sm p-2 h-28 focus:ring-2 focus:ring-blue-500 outline-none" 
+        placeholder="Tell us about your shipment (origin, destination, weight)" 
+      />
+
+      <div className="mt-4">
+        {/* STEP 2: Changed to type="submit" */}
+        <button 
+          type="submit" 
+          className="w-full md:w-auto px-6 py-3 rounded-md bg-cyan-600 text-white font-semibold hover:bg-cyan-700 transition-colors"
+        >
+          Send Message
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+            {/* Footer */}
+            <footer className="mt-20 py-8 text-center text-sm text-gray-500">© 2026 ClearLine Logistics LLC — Trusted freight brokerage</footer>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+</body>
+</html>
