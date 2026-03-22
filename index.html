@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearLine Logistics LLC | Reliable Freight Solutions</title>
+    <meta name="description" content="ClearLine Logistics LLC connects shippers with trusted carriers to move freight efficiently, safely, and on time across America.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="text-slate-800 bg-slate-50 antialiased overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-transparent py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="text-2xl font-bold tracking-tight text-white flex items-center gap-2 group transition-colors duration-300" id="nav-logo">
+                <div class="bg-blue-600 text-white p-1.5 rounded-lg group-hover:bg-blue-500 transition-colors">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <span>ClearLine <span class="text-blue-500 font-light">Logistics</span></span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center text-sm font-medium text-slate-300" id="nav-links">
+                <a href="#home" class="hover:text-blue-500 transition-colors">Home</a>
+                <a href="#services" class="hover:text-blue-500 transition-colors">Services</a>
+                <a href="#shippers" class="hover:text-blue-500 transition-colors">Shippers</a>
+                <a href="#carriers" class="hover:text-blue-500 transition-colors">Carriers</a>
+                <a href="#about" class="hover:text-blue-500 transition-colors">About</a>
+                <a href="CLgenerated.html" class="hover:text-blue-500 transition-colors">Generated</a>
+                <a href="#contact" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full transition-all shadow-lg hover:shadow-blue-500/30">Contact Us</a>
+            
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-50 transform translate-x-full transition-transform duration-300 md:hidden flex flex-col justify-center items-center space-y-8">
+            <button id="close-menu-btn" class="absolute top-6 right-6 text-white text-3xl">
+                <i class="fa-solid fa-times"></i>
+            </button>
+            <a href="#home" class="mobile-link text-2xl font-semibold text-white hover:text-blue-500">Home</a>
+            <a href="#services" class="mobile-link text-2xl font-semibold text-white hover:text-blue-500">Services</a>
+            <a href="#shippers" class="mobile-link text-2xl font-semibold text-white hover:text-blue-500">Shippers</a>
+            <a href="#carriers" class="mobile-link text-2xl font-semibold text-white hover:text-blue-500">Carriers</a>
+            <a href="#about" class="mobile-link text-2xl font-semibold text-white hover:text-blue-500">About</a>
+            <a href="#contact" class="mobile-link text-xl font-semibold bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg">Contact Us</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative h-screen flex items-center justify-center hero-gradient text-white pt-20">
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <span class="inline-block py-1 px-3 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-semibold mb-6 animate-fade-in-up">
+                Premium Freight Brokerage
+            </span>
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 reveal">
+                Reliable Freight Solutions <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-200">Across America</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto reveal stagger-1">
+                ClearLine Logistics LLC connects shippers with trusted carriers to move freight efficiently, safely, and on time. Experience the future of logistics.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center reveal stagger-2">
+                <a href="#contact" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-lg hover:shadow-blue-600/40 hover:-translate-y-1">
+                    Get a Quote
+                </a>
+                <a href="#carriers" class="bg-transparent border border-white/30 hover:bg-white/10 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all backdrop-blur-sm hover:-translate-y-1">
+                    Become a Carrier
+                </a>
+            </div>
+        </div>
+        
+        <!-- Scroll Down Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-slate-400">
+            <i class="fa-solid fa-chevron-down text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-blue-600 font-semibold tracking-wide uppercase text-sm mb-3">Our Expertise</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-slate-900">Comprehensive Logistics Services</h3>
+                <div class="w-20 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="group p-8 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2 reveal stagger-1">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-trailer"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Full Truckload (FTL)</h4>
+                    <p class="text-slate-600 leading-relaxed">
+                        Efficient nationwide transport for large shipments. We secure the best rates and reliable drivers for your full loads.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="group p-8 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2 reveal stagger-2">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Less Than Truckload (LTL)</h4>
+                    <p class="text-slate-600 leading-relaxed">
+                        Cost-effective solutions for smaller shipments. We consolidate your freight to save you money without compromising speed.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="group p-8 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2 reveal stagger-3">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Freight Brokerage</h4>
+                    <p class="text-slate-600 leading-relaxed">
+                        Acting as your trusted intermediary, connecting you with our vast network of pre-vetted carriers across North America.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="group p-8 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2 reveal stagger-1">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-route"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Dedicated Freight</h4>
+                    <p class="text-slate-600 leading-relaxed">
+                        Consistent capacity for your recurring lanes. We build long-term solutions for your supply chain stability.
+                    </p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="group p-8 rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2 reveal stagger-2">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-3">Logistics Coordination</h4>
+                    <p class="text-slate-600 leading-relaxed">
+                        End-to-end management of your logistics operations. Tracking, scheduling, and problem-solving so you don't have to.
+                    </p>
+                </div>
+
+                 <!-- Card 6 -->
+                 <div class="group p-8 rounded-2xl bg-blue-600 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:-translate-y-2 reveal stagger-3 flex flex-col justify-center items-center text-center">
+                    <h4 class="text-2xl font-bold mb-4">Need Custom Solutions?</h4>
+                    <p class="mb-6 opacity-90">
+                        We tailor our services to meet your unique shipping requirements.
+                    </p>
+                    <a href="#contact" class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-slate-100 transition-colors">
+                        Talk to an Expert
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shippers Section -->
+    <section id="shippers" class="py-24 bg-slate-50 relative overflow-hidden">
+        <!-- Decorative blobs -->
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-blue-100/30 -skew-x-12 translate-x-20"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="lg:w-1/2 reveal">
+                    <img src="https://images.pexels.com/photos/4487365/pexels-photo-4487365.jpeg" alt="Warehouse operations" class="rounded-2xl shadow-2xl shadow-slate-400/20">
+                </div>
+                <div class="lg:w-1/2 reveal stagger-1">
+                    <div class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">For Shippers</div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Ship Smarter with ClearLine</h2>
+                    <p class="text-slate-600 text-lg mb-8 leading-relaxed">
+                        In a volatile market, you need a partner who values consistency and transparency. ClearLine Logistics ensures your freight arrives on time, every time.
+                    </p>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-slate-700 font-medium">Reliable capacity across 48 states</span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-slate-700 font-medium">Competitive, transparent freight rates</span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-slate-700 font-medium">Real-time communication & tracking</span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <span class="text-slate-700 font-medium">Dedicated account management</span>
+                        </li>
+                    </ul>
+
+                    <a href="#contact" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-full font-semibold transition-all shadow-lg hover:-translate-y-1">
+                        Request a Quote
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Carriers Section -->
+    <section id="carriers" class="py-24 bg-slate-900 text-white">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row-reverse items-center gap-16">
+                <div class="lg:w-1/2 reveal">
+                    <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Truck driver" class="rounded-2xl shadow-2xl shadow-blue-900/20 border border-slate-700">
+                </div>
+                <div class="lg:w-1/2 reveal stagger-1">
+                    <div class="inline-block px-3 py-1 bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-full text-sm font-semibold mb-4">For Carriers</div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Partner With ClearLine Logistics</h2>
+                    <p class="text-slate-300 text-lg mb-8 leading-relaxed">
+                        We respect the drivers who keep America moving. Join our network for access to consistent freight, fair pay, and a team that answers the phone.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                        <div class="p-5 bg-slate-800 rounded-xl border border-slate-700">
+                            <i class="fa-solid fa-wallet text-blue-400 text-2xl mb-3"></i>
+                            <h4 class="font-bold text-lg mb-1">Fast Payments</h4>
+                            <p class="text-slate-400 text-sm">Quick pay options available to keep your cash flow healthy.</p>
+                        </div>
+                        <div class="p-5 bg-slate-800 rounded-xl border border-slate-700">
+                            <i class="fa-solid fa-cubes-stacked text-blue-400 text-2xl mb-3"></i>
+                            <h4 class="font-bold text-lg mb-1">Consistent Loads</h4>
+                            <p class="text-slate-400 text-sm">Access to dedicated lanes and spot market opportunities.</p>
+                        </div>
+                        <div class="p-5 bg-slate-800 rounded-xl border border-slate-700">
+                            <i class="fa-solid fa-headset text-blue-400 text-2xl mb-3"></i>
+                            <h4 class="font-bold text-lg mb-1">Dedicated Support</h4>
+                            <p class="text-slate-400 text-sm">24/7 dispatch support. We don't leave you hanging.</p>
+                        </div>
+                        <div class="p-5 bg-slate-800 rounded-xl border border-slate-700">
+                            <i class="fa-solid fa-handshake-simple text-blue-400 text-2xl mb-3"></i>
+                            <h4 class="font-bold text-lg mb-1">Strong Relationships</h4>
+                            <p class="text-slate-400 text-sm">We treat carriers as partners, not just numbers.</p>
+                        </div>
+                    </div>
+
+<button onclick="window.location.href='#contact'" 
+        class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-full font-semibold transition-all shadow-lg hover:shadow-blue-600/40 hover:-translate-y-1">
+    Carrier Setup
+</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-white">
+        <div class="container mx-auto px-6 text-center max-w-4xl">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-8 reveal">Driving Success Through Logistics</h2>
+            <p class="text-lg text-slate-600 leading-relaxed mb-12 reveal stagger-1">
+                **ClearLine Logistics LLC** was founded on a simple principle: doing what we say we're going to do. In an industry often plagued by uncertainty, we provide the clarity and reliability our clients need. We focus on building strong relationships with both shippers and carriers, creating a network where efficiency meets trust.
+            </p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 reveal stagger-2">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">500+</div>
+                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">Carriers Network</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">98%</div>
+                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">On-Time Delivery</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">24/7</div>
+                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">Support</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">50 States</div>
+                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">Coverage</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-slate-50">
+        <div class="container mx-auto px-6">
+            <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row reveal">
+                
+                <!-- Contact Info -->
+                <div class="bg-slate-900 text-white p-12 md:w-2/5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-600 rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                    <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-400 rounded-full blur-3xl opacity-20 -ml-10 -mb-10"></div>
+                    
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-bold mb-6">Contact Information</h3>
+                        <p class="text-slate-300 mb-10">Have a shipment to move or questions about our services? Reach out to us today.</p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <i class="fa-solid fa-location-dot mt-1 text-blue-400"></i>
+                                <div>
+                                    <h5 class="font-semibold text-sm text-slate-200">Headquarters</h5>
+                                    <p class="text-slate-400 text-sm">ClearLine Logistics LLC<br>Dayton, OH</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <i class="fa-solid fa-envelope mt-1 text-blue-400"></i>
+                                <div>
+                                    <h5 class="font-semibold text-sm text-slate-200">Email</h5>
+                                    <a href="mailto:contact@clearline.llc" class="text-slate-400 text-sm hover:text-white transition-colors">contact@clearline.llc</a>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <i class="fa-solid fa-phone mt-1 text-blue-400"></i>
+                                <div>
+                                    <h5 class="font-semibold text-sm text-slate-200">Phone</h5>
+                                    <p class="text-slate-400 text-sm"><a href="tel:9372507958" class="hover:text-white transition-colors">937-250-7958</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 mt-12">
+                        <div class="flex gap-4">
+                            <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors"><i class="fa-brands fa-linkedin-in"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors"><i class="fa-brands fa-twitter"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors"><i class="fa-brands fa-facebook-f"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="p-12 md:w-3/5">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-6">Send us a Message</h3>
+                    <form action="https://formspree.io/f/xqedgawd" method="POST" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                                <input type="text" name="name" required class="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none" placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                                <input type="email" name="email" required class="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none" placeholder="john@company.com">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
+                                <input type="tel" name="phone" class="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none" placeholder="937-250-7958">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Subject</label>
+                                <select name="subject" class="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none">
+                                    <option value="Freight Quote">Freight Quote</option>
+                                    <option value="Carrier Setup">Carrier Setup</option>
+                                    <option value="General Inquiry">General Inquiry</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Message</label>
+                            <textarea name="message" required rows="4" class="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none" placeholder="Tell us about your freight needs..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-blue-500/30 transition-all transform hover:-translate-y-1">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 py-12 border-t border-slate-800">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-1">
+                    <a href="#" class="text-2xl font-bold tracking-tight text-white flex items-center gap-2 mb-6">
+                        <div class="bg-blue-600 text-white p-1.5 rounded-lg">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                        <span>ClearLine</span>
+                    </a>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Connecting shippers and carriers with transparency, integrity, and speed. Your trusted partner in logistics.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#home" class="hover:text-blue-400 transition-colors">Home</a></li>
+                        <li><a href="#services" class="hover:text-blue-400 transition-colors">Services</a></li>
+                        <li><a href="#shippers" class="hover:text-blue-400 transition-colors">For Shippers</a></li>
+                        <li><a href="#carriers" class="hover:text-blue-400 transition-colors">For Carriers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-6">Services</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Full Truckload (FTL)</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Less Than Truckload (LTL)</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Refrigerated Freight</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Expedited Shipping</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-6">Legal</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition-colors">Carrier Packet</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-slate-500">© 2026 ClearLine Logistics LLC. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
