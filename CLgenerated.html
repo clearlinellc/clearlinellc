@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Line Logistics - Bill of Lading Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-navy-900: #003366; /* Deep Classic Navy */
+            --color-navy-800: #004488; /* Medium Navy */
+            --color-navy-700: #0055aa; /* Bright Navy */
+            --color-slate-grey: #f0f4f8; /* Very Light Blue-Grey for backgrounds */
+            --color-safety-orange: #2b6cb0; /* Action Blue (replacing Orange) */
+            --color-safety-yellow: #eebc24; /* Keep yellow or mute it? User said Blue/White. Let's make it a subtle Gold for contrast or just Blue. I will stick to Blue. */
+        }
+        .form-section {
+            @apply bg-white p-6 rounded-lg shadow-md border-t-4 border-navy-900 mb-6;
+        }
+        .section-title {
+            @apply text-lg font-bold text-navy-900 mb-4 uppercase tracking-wide border-b border-gray-200 pb-2 flex items-center gap-2;
+        }
+        .input-group {
+            @apply flex flex-col gap-1;
+        }
+        .input-label {
+            @apply text-xs font-semibold text-gray-600 uppercase;
+        }
+        .form-input {
+            @apply w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-transparent transition-all text-sm;
+        }
+        .btn-primary {
+            @apply bg-safety-orange hover:bg-orange-600 text-white font-bold py-3 px-8 rounded shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-2 text-lg uppercase tracking-wider cursor-pointer;
+        }
+        .tab-btn {
+            @apply px-6 py-3 font-bold text-sm uppercase tracking-wider border-b-4 border-transparent hover:bg-gray-50 transition-colors cursor-pointer;
+        }
+        .tab-btn.active {
+            @apply border-safety-orange text-navy-900 bg-white;
+        }
+        .tab-btn.inactive {
+            @apply text-gray-500 hover:text-navy-700;
+        }
+        .hidden-section {
+            display: none;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-gray-800 font-sans">
+
+    <!-- Access Portal Overlay -->
+    <div id="access-portal" class="fixed inset-0 z-[100] bg-navy-900 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full text-center">
+            <div class="mb-6 flex justify-center">
+                <div class="w-20 h-20 bg-navy-900 rounded-full flex items-center justify-center text-white border-4 border-safety-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold text-navy-900 mb-2">RESTRICTED ACCESS</h2>
+            <p class="text-gray-600 mb-8 uppercase tracking-widest text-xs font-semibold">Clear Line Logistics LLC Internal Tool</p>
+            
+            <div class="space-y-4">
+                <div class="text-left">
+                    <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Enter Access Code</label>
+                    <input type="password" id="accessCode" onkeydown="if(event.key==='Enter') checkAccess()" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-navy-700 outline-none text-center text-lg tracking-[0.5em] font-bold" placeholder="••••••••">
+                </div>
+                <button onclick="checkAccess()" class="w-full bg-navy-900 hover:bg-navy-800 text-white font-bold py-4 rounded-lg shadow-lg transform active:scale-95 transition-all text-sm uppercase tracking-widest">
+                    Unlock Application
+                </button>
+                <div id="access-error" class="hidden text-red-600 text-sm font-bold mt-2">
+                    Invalid Access Code. Please try again.
+                </div>
+            </div>
+            
+            <p class="mt-8 text-xs text-gray-400">Authorized personnel only. For assistance, contact support.</p>
+        </div>
+    </div>
+
+    <!-- Main Application Container (Hidden by default) -->
+    <div id="app-container" class="hidden">
+        <!-- Header -->
+        <header class="bg-navy-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <!-- Logo Icon Representation -->
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-navy-900 font-bold text-2xl border-2 border-safety-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-white">CLEAR LINE <span class="text-safety-orange">LOGISTICS</span></h1>
+                    <p class="text-xs text-gray-400 tracking-widest uppercase">Bill of Lading Generator</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right border-r border-navy-700 pr-4">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold leading-tight">Session Active</p>
+                    <button onclick="logout()" class="text-xs text-safety-orange hover:underline font-bold uppercase tracking-wider cursor-pointer leading-tight">Log Out</button>
+                </div>
+                <div class="text-right hidden sm:block">
+                    <p class="text-[10px] font-semibold text-gray-400 uppercase leading-tight">System Date</p>
+                    <span id="current-date" class="text-xs text-white font-bold leading-tight"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- Document Type Tabs -->
+        <div class="mb-8 bg-white rounded-lg shadow-sm flex overflow-x-auto border border-gray-200">
+            <div id="tab-bol" onclick="switchTab('BOL')" class="tab-btn active flex-1 text-center">Bill of Lading</div>
+            <div id="tab-invoice" onclick="switchTab('INVOICE')" class="tab-btn inactive flex-1 text-center">Freight Invoice</div>
+            <div id="tab-ratecon" onclick="switchTab('RATECON')" class="tab-btn inactive flex-1 text-center">Rate Confirmation</div>
+        </div>
+
+        <form id="bolForm" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- General Info -->
+            <div class="form-section lg:col-span-2">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Document Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="input-group" id="bol-group">
+                        <label class="input-label">BOL Number</label>
+                        <input type="text" id="bolNumber" class="form-input bg-blue-50 font-bold" value="BOL-2026-001" placeholder="Enter BOL #">
+                    </div>
+                    <div class="input-group hidden-section" id="inv-group">
+                        <label class="input-label">Invoice Number</label>
+                        <input type="text" id="invNumber" class="form-input bg-blue-50 font-bold" value="INV-2026-001" placeholder="Enter Invoice #">
+                    </div>
+                    <div class="input-group hidden-section" id="rc-group">
+                        <label class="input-label">Rate Con #</label>
+                        <input type="text" id="rcNumber" class="form-input bg-blue-50 font-bold" value="RC-2026-001" placeholder="Enter Rate Con #">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Date</label>
+                        <input type="date" id="date" class="form-input">
+                    </div>
+                    <div class="input-group hidden-section" id="dueDate-group">
+                        <label class="input-label">Due Date</label>
+                        <input type="date" id="dueDate" class="form-input">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Payment Terms</label>
+                        <select id="paymentTerms" class="form-input">
+                            <option value="Prepaid">Prepaid</option>
+                            <option value="Collect">Collect</option>
+                            <option value="Third Party">Third Party</option>
+                            <option value="Net 30">Net 30</option>
+                            <option value="Due on Receipt">Due on Receipt</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Parties (Bill To / Remit To) -->
+            <div class="form-section hidden-section lg:col-span-2" id="financial-parties">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Financial Parties (Bill To / Remit To)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-3">
+                        <h3 class="text-sm font-bold text-gray-700 uppercase border-b pb-1 mb-2">Bill To (Payer)</h3>
+                        <div class="input-group">
+                            <label class="input-label">Company Name</label>
+                            <input type="text" id="billToName" class="form-input" placeholder="Payer Company Inc">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Address</label>
+                            <input type="text" id="billToAddress" class="form-input" placeholder="123 Corporate Blvd">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="input-label">City</label>
+                                <input type="text" id="billToCity" class="form-input" placeholder="City">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">St / Zip</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="billToState" class="form-input w-1/3" placeholder="ST">
+                                    <input type="text" id="billToZip" class="form-input w-2/3" placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 border-l pl-0 md:pl-6 border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-700 uppercase border-b pb-1 mb-2">Remit To (Payee)</h3>
+                        <div class="input-group">
+                            <label class="input-label">Company Name</label>
+                            <input type="text" id="remitToName" class="form-input" value="Clear Line Logistics LLC" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Address</label>
+                            <input type="text" id="remitToAddress" class="form-input" value="100 Logistics Way, Suite 500" readonly>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                             <div class="input-group">
+                                <label class="input-label">City</label>
+                                <input type="text" id="remitToCity" class="form-input" value="Atlanta" readonly>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">St / Zip</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="remitToState" class="form-input w-1/3" value="GA" readonly>
+                                    <input type="text" id="remitToZip" class="form-input w-2/3" value="30303" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipper -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    Shipper / Origin
+                </h2>
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="input-group">
+                        <label class="input-label">Company Name</label>
+                        <input type="text" id="shipperName" class="form-input" placeholder="Shipper Company LLC">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Address</label>
+                        <input type="text" id="shipperAddress" class="form-input" placeholder="123 Warehouse Rd">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group">
+                            <label class="input-label">City</label>
+                            <input type="text" id="shipperCity" class="form-input" placeholder="City">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">State / Zip</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="shipperState" class="form-input w-1/3" placeholder="ST">
+                                <input type="text" id="shipperZip" class="form-input w-2/3" placeholder="12345">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group">
+                            <label class="input-label">Contact Name</label>
+                            <input type="text" id="shipperContact" class="form-input" placeholder="Contact Person">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Phone</label>
+                            <input type="tel" id="shipperPhone" class="form-input" placeholder="(555) 000-0000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consignee -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    Consignee / Destination
+                </h2>
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="input-group">
+                        <label class="input-label">Company Name</label>
+                        <input type="text" id="consigneeName" class="form-input" placeholder="Receiver Inc">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Address</label>
+                        <input type="text" id="consigneeAddress" class="form-input" placeholder="456 Dropoff Blvd">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group">
+                            <label class="input-label">City</label>
+                            <input type="text" id="consigneeCity" class="form-input" placeholder="City">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">State / Zip</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="consigneeState" class="form-input w-1/3" placeholder="ST">
+                                <input type="text" id="consigneeZip" class="form-input w-2/3" placeholder="67890">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group">
+                            <label class="input-label">Contact Name</label>
+                            <input type="text" id="consigneeContact" class="form-input" placeholder="Receiving Clerk">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Phone</label>
+                            <input type="tel" id="consigneePhone" class="form-input" placeholder="(555) 999-9999">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carrier & Route -->
+            <div class="form-section lg:col-span-2">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+                    Carrier & Transport Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="input-group">
+                            <label class="input-label">Carrier Name</label>
+                            <input type="text" id="carrierName" class="form-input" placeholder="Transport Logistics Co">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="input-label">MC/DOT Number</label>
+                                <input type="text" id="carrierMC" class="form-input" placeholder="MC-123456">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Carrier Phone</label>
+                                <input type="tel" id="carrierPhone" class="form-input" placeholder="(800) 555-5555">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Driver Name</label>
+                            <input type="text" id="driverName" class="form-input" placeholder="John Doe">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 border-l pl-0 md:pl-6 border-gray-200">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="input-label">Pickup Date</label>
+                                <input type="date" id="pickupDate" class="form-input">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Pickup Time</label>
+                                <input type="time" id="pickupTime" class="form-input">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="input-label">Delivery Date</label>
+                                <input type="date" id="deliveryDate" class="form-input">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Delivery Time</label>
+                                <input type="time" id="deliveryTime" class="form-input">
+                            </div>
+                        </div>
+                         <div class="input-group">
+                            <label class="input-label">Special Instructions</label>
+                            <textarea id="specialInstructions" class="form-input" rows="1" placeholder="Gate codes, handling instructions..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Driver & Equipment Details (Hidden by default, for Rate Con) -->
+            <div class="form-section lg:col-span-2 hidden-section" id="driver-info-section">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+                    Driver & Equipment Details
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="input-group">
+                        <label class="input-label">Driver Phone</label>
+                        <input type="tel" id="driverPhone" class="form-input" placeholder="(555) 123-4567">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Truck Number</label>
+                        <input type="text" id="truckNumber" class="form-input" placeholder="Truck #">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Trailer Number</label>
+                        <input type="text" id="trailerNumber" class="form-input" placeholder="Trailer #">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load Details -->
+            <div class="form-section lg:col-span-2">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
+                    <h2 class="section-title border-none mb-0 pb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                        Freight Details
+                    </h2>
+                    <button type="button" onclick="loadSampleData()" class="text-sm text-blue-600 hover:text-blue-800 underline">Load Sample Data</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500" id="freightTable">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3">Units</th>
+                                <th class="px-4 py-3">Type</th>
+                                <th class="px-4 py-3 w-1/2">Description of Commodity</th>
+                                <th class="px-4 py-3">Weight (lbs)</th>
+                                <th class="px-4 py-3">HazMat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="freightTableBody">
+                            <!-- Rows generated by JS or static -->
+                            <tr class="border-b">
+                                <td class="p-2"><input type="number" class="form-input freight-units" value="1"></td>
+                                <td class="p-2">
+                                    <select class="form-input freight-type">
+                                        <option value="PLT">Pallets</option>
+                                        <option value="PCS">Pieces</option>
+                                        <option value="CRT">Crates</option>
+                                        <option value="DRM">Drums</option>
+                                        <option value="SKD">Skids</option>
+                                    </select>
+                                </td>
+                                <td class="p-2"><input type="text" class="form-input freight-desc" placeholder="Commodity description"></td>
+                                <td class="p-2"><input type="number" class="form-input freight-weight" placeholder="0"></td>
+                                <td class="p-2 text-center"><input type="checkbox" class="w-4 h-4 text-navy-900 freight-hm"></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="number" class="form-input freight-units"></td>
+                                <td class="p-2">
+                                    <select class="form-input freight-type">
+                                        <option value="PLT">Pallets</option>
+                                        <option value="PCS">Pieces</option>
+                                        <option value="CRT">Crates</option>
+                                        <option value="DRM">Drums</option>
+                                        <option value="SKD">Skids</option>
+                                    </select>
+                                </td>
+                                <td class="p-2"><input type="text" class="form-input freight-desc" placeholder="Commodity description"></td>
+                                <td class="p-2"><input type="number" class="form-input freight-weight" placeholder="0"></td>
+                                <td class="p-2 text-center"><input type="checkbox" class="w-4 h-4 text-navy-900 freight-hm"></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="number" class="form-input freight-units"></td>
+                                <td class="p-2">
+                                    <select class="form-input freight-type">
+                                        <option value="PLT">Pallets</option>
+                                        <option value="PCS">Pieces</option>
+                                        <option value="CRT">Crates</option>
+                                        <option value="DRM">Drums</option>
+                                        <option value="SKD">Skids</option>
+                                    </select>
+                                </td>
+                                <td class="p-2"><input type="text" class="form-input freight-desc" placeholder="Commodity description"></td>
+                                <td class="p-2"><input type="number" class="form-input freight-weight" placeholder="0"></td>
+                                <td class="p-2 text-center"><input type="checkbox" class="w-4 h-4 text-navy-900 freight-hm"></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="number" class="form-input freight-units"></td>
+                                <td class="p-2">
+                                    <select class="form-input freight-type">
+                                        <option value="PLT">Pallets</option>
+                                        <option value="PCS">Pieces</option>
+                                        <option value="CRT">Crates</option>
+                                        <option value="DRM">Drums</option>
+                                        <option value="SKD">Skids</option>
+                                    </select>
+                                </td>
+                                <td class="p-2"><input type="text" class="form-input freight-desc" placeholder="Commodity description"></td>
+                                <td class="p-2"><input type="number" class="form-input freight-weight" placeholder="0"></td>
+                                <td class="p-2 text-center"><input type="checkbox" class="w-4 h-4 text-navy-900 freight-hm"></td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="number" class="form-input freight-units"></td>
+                                <td class="p-2">
+                                    <select class="form-input freight-type">
+                                        <option value="PLT">Pallets</option>
+                                        <option value="PCS">Pieces</option>
+                                        <option value="CRT">Crates</option>
+                                        <option value="DRM">Drums</option>
+                                        <option value="SKD">Skids</option>
+                                    </select>
+                                </td>
+                                <td class="p-2"><input type="text" class="form-input freight-desc" placeholder="Commodity description"></td>
+                                <td class="p-2"><input type="number" class="form-input freight-weight" placeholder="0"></td>
+                                <td class="p-2 text-center"><input type="checkbox" class="w-4 h-4 text-navy-900 freight-hm"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <div class="bg-gray-100 p-3 rounded text-right">
+                        <p class="text-sm font-bold text-gray-700">TOTAL WEIGHT: <span id="totalWeightDisplay">0</span> lbs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Charges & Rates (Invoice / Rate Con) -->
+            <div class="form-section lg:col-span-2 hidden-section" id="financial-section">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
+                    <h2 class="section-title border-none mb-0 pb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Charges & Rates
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500" id="chargesTable">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 w-1/2">Description / Item</th>
+                                <th class="px-4 py-3">Quantity</th>
+                                <th class="px-4 py-3">Rate ($)</th>
+                                <th class="px-4 py-3 text-right">Amount ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chargesTableBody">
+                            <tr class="border-b">
+                                <td class="p-2"><input type="text" class="form-input charge-desc" placeholder="Line Haul / Flat Rate"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-qty" value="1" step="0.01"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-rate" placeholder="0.00" step="0.01"></td>
+                                <td class="p-2 text-right font-bold charge-amount text-navy-900">0.00</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="text" class="form-input charge-desc" placeholder="Fuel Surcharge"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-qty" value="1" step="0.01"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-rate" placeholder="0.00" step="0.01"></td>
+                                <td class="p-2 text-right font-bold charge-amount text-navy-900">0.00</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="text" class="form-input charge-desc" placeholder="Accessorial / Lumper"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-qty" value="1" step="0.01"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-rate" placeholder="0.00" step="0.01"></td>
+                                <td class="p-2 text-right font-bold charge-amount text-navy-900">0.00</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-2"><input type="text" class="form-input charge-desc" placeholder="Detention"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-qty" value="1" step="0.01"></td>
+                                <td class="p-2"><input type="number" class="form-input charge-rate" placeholder="0.00" step="0.01"></td>
+                                <td class="p-2 text-right font-bold charge-amount text-navy-900">0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <div class="bg-gray-100 p-3 rounded text-right min-w-[200px]">
+                        <p class="text-lg font-bold text-navy-900">TOTAL: $<span id="totalAmountDisplay">0.00</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Remittance / Payment Instructions (Rate Confirmation Only) -->
+            <div class="form-section lg:col-span-2 hidden-section" id="remit-section">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
+                    <h2 class="section-title border-none mb-0 pb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        Remittance Information
+                    </h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Send Invoices To</label>
+                        <input type="text" id="remitName" class="form-input mb-2" placeholder="Company Name for Remittance">
+                        <input type="text" id="remitEmail" class="form-input" placeholder="invoices@example.com">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Payment Terms</label>
+                        <input type="text" id="remitPaymentTerms" class="form-input" placeholder="e.g. Net 30 Days, Quick Pay 2%">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                         <label class="block text-gray-700 text-sm font-bold mb-2">Remit Address</label>
+                        <textarea id="remitAddress" class="form-input h-20" placeholder="Street Address, City, State, ZIP"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Generate Button -->
+            <div class="lg:col-span-2 flex flex-col items-center justify-center pt-4">
+                <button type="button" onclick="generateDocument()" class="btn-primary w-full md:w-auto" id="generateBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <span id="generateBtnText">Generate Bill of Lading PDF</span>
+                </button>
+                <p class="mt-3 text-sm text-gray-500">Generates a professional PDF document.</p>
+            </div>
+
+        </form>
+        
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 text-sm border-t border-gray-200 pt-6">
+            <p>&copy; 2026 Clear Line Logistics LLC. All Rights Reserved.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // Init state
+        let currentDocType = 'BOL';
+
+        // Init Date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString();
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('dueDate').valueAsDate = new Date(new Date().setDate(new Date().getDate() + 30)); // default net 30
+        document.getElementById('pickupDate').valueAsDate = new Date();
+        document.getElementById('deliveryDate').valueAsDate = new Date();
+
+        // Calculate Freight Totals
+        document.getElementById('freightTable').addEventListener('input', function() {
+            let total = 0;
+            document.querySelectorAll('.freight-weight').forEach(input => {
+                total += Number(input.value) || 0;
+            });
+            document.getElementById('totalWeightDisplay').textContent = total.toLocaleString();
+        });
+
+        // Calculate Charges Totals
+        document.getElementById('chargesTable').addEventListener('input', function(e) {
+            let grandTotal = 0;
+            const rows = document.getElementById('chargesTableBody').querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.charge-qty').value) || 0;
+                const rate = parseFloat(row.querySelector('.charge-rate').value) || 0;
+                const amount = qty * rate;
+                
+                row.querySelector('.charge-amount').textContent = amount.toFixed(2);
+                grandTotal += amount;
+            });
+            
+            document.getElementById('totalAmountDisplay').textContent = grandTotal.toFixed(2);
+        });
+
+        function switchTab(type) {
+            currentDocType = type;
+            
+            // Update Tabs UI
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-safety-orange', 'text-navy-900', 'bg-white');
+                btn.classList.add('inactive', 'text-gray-500');
+            });
+            document.getElementById(`tab-${type.toLowerCase()}`).classList.add('active', 'border-safety-orange', 'text-navy-900', 'bg-white');
+            document.getElementById(`tab-${type.toLowerCase()}`).classList.remove('inactive', 'text-gray-500');
+
+            // Show/Hide Fields
+            const hide = (id) => document.getElementById(id).classList.add('hidden-section');
+            const show = (id) => document.getElementById(id).classList.remove('hidden-section');
+
+            // Reset all common conditional fields
+            hide('bol-group');
+            hide('inv-group');
+            hide('rc-group');
+            hide('dueDate-group');
+            hide('financial-parties');
+            hide('financial-section');
+            hide('driver-info-section');
+            hide('remit-section');
+
+            // Show Freight details by default, hide if Invoice? 
+            // Actually Invoice might want freight details too, but definitely needs financial.
+            // Let's keep Freight Table visible for all as context, but Financial only for INV/RC.
+            
+            const btnText = document.getElementById('generateBtnText');
+
+            if (type === 'BOL') {
+                show('bol-group');
+                btnText.textContent = "Generate Bill of Lading PDF";
+            } else if (type === 'INVOICE') {
+                show('inv-group');
+                show('dueDate-group');
+                show('financial-parties');
+                show('financial-section');
+                show('remit-section'); // Show payment terms/remit info for invoice
+                btnText.textContent = "Generate Freight Invoice PDF";
+            } else if (type === 'RATECON') {
+                show('rc-group');
+                show('financial-parties'); // To show Carrier as payee logic potentially, or Broker
+                show('financial-section');
+                show('driver-info-section');
+                show('remit-section');
+                btnText.textContent = "Generate Rate Confirmation PDF";
+            }
+        }
+
+        function loadSampleData() {
+            // Common Data
+            document.getElementById('paymentTerms').value = "Net 30";
+            document.getElementById('shipperName').value = "Acme Manufacturing LLC";
+            document.getElementById('shipperAddress').value = "1200 Industrial Pkwy";
+            document.getElementById('shipperCity').value = "Chicago";
+            document.getElementById('shipperState').value = "IL";
+            document.getElementById('shipperZip').value = "60609";
+            document.getElementById('shipperContact').value = "Mike Johnson";
+            document.getElementById('shipperPhone').value = "(312) 555-0123";
+
+            document.getElementById('consigneeName').value = "West Coast Distributors";
+            document.getElementById('consigneeAddress').value = "4500 Commerce Blvd";
+            document.getElementById('consigneeCity').value = "Los Angeles";
+            document.getElementById('consigneeState').value = "CA";
+            document.getElementById('consigneeZip').value = "90058";
+            document.getElementById('consigneeContact').value = "Sarah Connor";
+            document.getElementById('consigneePhone').value = "(213) 555-0987";
+
+            document.getElementById('carrierName').value = "FastLane Logistics";
+            document.getElementById('carrierMC').value = "MC-889900";
+            document.getElementById('carrierPhone').value = "(800) 555-5555";
+            document.getElementById('driverName').value = "David Miller";
+            document.getElementById('driverPhone').value = "(312) 555-9876";
+            document.getElementById('truckNumber').value = "TRK-9988";
+            document.getElementById('trailerNumber').value = "TRL-5544";
+            
+            document.getElementById('pickupTime').value = "08:00";
+            document.getElementById('deliveryTime').value = "14:00";
+            document.getElementById('specialInstructions').value = "Call 2 hours before delivery. Receiver requires liftgate.";
+            
+            // Financial Parties
+            document.getElementById('billToName').value = "Acme Manufacturing LLC";
+            document.getElementById('billToAddress').value = "1200 Industrial Pkwy";
+            document.getElementById('billToCity').value = "Chicago";
+            document.getElementById('billToState').value = "IL";
+            document.getElementById('billToZip').value = "60609";
+
+            // Remittance Info
+            document.getElementById('remitName').value = "Clear Line Logistics LLC";
+            document.getElementById('remitEmail').value = "accounting@clearlinelogistics.com";
+            document.getElementById('remitPaymentTerms').value = "Standard Net 30 Days";
+            document.getElementById('remitAddress').value = "PO Box 12345, Atlanta GA 30301";
+
+            // Load Freight Items
+            const units = document.querySelectorAll('.freight-units');
+            const types = document.querySelectorAll('.freight-type');
+            const descs = document.querySelectorAll('.freight-desc');
+            const weights = document.querySelectorAll('.freight-weight');
+
+            if(units[0]) {
+                units[0].value = 10;
+                types[0].value = "PLT";
+                descs[0].value = "Auto Parts - Class 60";
+                weights[0].value = 12500;
+            }
+            if(units[1]) {
+                units[1].value = 2;
+                types[1].value = "CRT";
+                descs[1].value = "Hardware Accessories";
+                weights[1].value = 450;
+            }
+
+            // Load Financial Charges
+            const chargeDescs = document.querySelectorAll('.charge-desc');
+            const chargeQtys = document.querySelectorAll('.charge-qty');
+            const chargeRates = document.querySelectorAll('.charge-rate');
+            
+            if(chargeDescs[0]) {
+                chargeDescs[0].value = "Line Haul - Flat Rate";
+                chargeQtys[0].value = 1;
+                chargeRates[0].value = 2500.00;
+            }
+            if(chargeDescs[1]) {
+                chargeDescs[1].value = "Fuel Surcharge (FSC)";
+                chargeQtys[1].value = 1;
+                chargeRates[1].value = 450.00;
+            }
+
+            // Trigger total calculations
+            document.getElementById('freightTable').dispatchEvent(new Event('input', { bubbles: true }));
+            document.getElementById('chargesTable').dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function generateDocument() {
+            if (currentDocType === 'BOL') generateBOL();
+            else if (currentDocType === 'INVOICE') generateInvoice();
+            else if (currentDocType === 'RATECON') generateRateCon();
+        }
+
+        async function generateBOL() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const val = (id) => document.getElementById(id).value || '';
+            const navy = [0, 51, 102];
+
+            // Header
+            doc.setFillColor(...navy);
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text("STRAIGHT BILL OF LADING", 105, 15, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("CLEAR LINE LOGISTICS LLC", 105, 22, { align: "center" });
+
+            doc.setTextColor(0,0,0);
+            doc.setFontSize(9);
+            let y = 35;
+            
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.1);
+
+            // Shipper
+            doc.setFillColor(240, 240, 240);
+            doc.rect(10, y, 90, 6, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.text("SHIPPER / ORIGIN", 12, y+4);
+            doc.rect(10, y+6, 90, 35);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Name: ${val('shipperName')}`, 12, y+11);
+            doc.text(`Addr: ${val('shipperAddress')}`, 12, y+16);
+            doc.text(`City/St/Zip: ${val('shipperCity')}, ${val('shipperState')} ${val('shipperZip')}`, 12, y+21);
+            doc.text(`Contact: ${val('shipperContact')}`, 12, y+31);
+            doc.text(`Phone: ${val('shipperPhone')}`, 12, y+36);
+
+            // Ref
+            doc.setFillColor(240, 240, 240);
+            doc.rect(110, y, 90, 6, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.text("REFERENCE INFO", 112, y+4);
+            doc.rect(110, y+6, 90, 35);
+            doc.setFont("helvetica", "bold");
+            doc.text(`BOL #: ${val('bolNumber')}`, 112, y+12);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Date: ${val('date')}`, 112, y+18);
+            doc.text(`Payment Terms: ${val('paymentTerms')}`, 112, y+24);
+
+            y += 45;
+
+            // Consignee
+            doc.setFillColor(240, 240, 240);
+            doc.rect(10, y, 90, 6, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.text("CONSIGNEE / DESTINATION", 12, y+4);
+            doc.rect(10, y+6, 90, 35);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Name: ${val('consigneeName')}`, 12, y+11);
+            doc.text(`Addr: ${val('consigneeAddress')}`, 12, y+16);
+            doc.text(`City/St/Zip: ${val('consigneeCity')}, ${val('consigneeState')} ${val('consigneeZip')}`, 12, y+21);
+            doc.text(`Contact: ${val('consigneeContact')}`, 12, y+31);
+            doc.text(`Phone: ${val('consigneePhone')}`, 12, y+36);
+
+            // Carrier
+            doc.setFillColor(240, 240, 240);
+            doc.rect(110, y, 90, 6, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.text("CARRIER DETAILS", 112, y+4);
+            doc.rect(110, y+6, 90, 35);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Name: ${val('carrierName')}`, 112, y+11);
+            doc.text(`MC/DOT: ${val('carrierMC')}`, 112, y+16);
+            doc.text(`Driver: ${val('driverName')}`, 112, y+21);
+            doc.text(`Phone: ${val('carrierPhone')}`, 112, y+26);
+            doc.line(110, y+28, 200, y+28);
+            doc.setFont("helvetica", "bold");
+            doc.text("ROUTE", 112, y+32);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Pickup: ${val('pickupDate')} ${val('pickupTime')}`, 125, y+32);
+            doc.text(`Deliv: ${val('deliveryDate')} ${val('deliveryTime')}`, 125, y+37);
+
+            y += 45;
+
+            doc.rect(10, y, 190, 20);
+            doc.setFont("helvetica", "bold");
+            doc.text("SPECIAL INSTRUCTIONS:", 12, y+5);
+            doc.setFont("helvetica", "normal");
+            doc.text(val('specialInstructions'), 12, y+10, { maxWidth: 186 });
+
+            y += 25;
+
+            // Freight Table
+            const columns = ["Units", "Type", "HM", "Description of Commodity", "Weight (lbs)"];
+            const rows = [];
+            const unitInputs = document.querySelectorAll('.freight-units');
+            const typeInputs = document.querySelectorAll('.freight-type');
+            const descInputs = document.querySelectorAll('.freight-desc');
+            const weightInputs = document.querySelectorAll('.freight-weight');
+            const hmInputs = document.querySelectorAll('.freight-hm');
+            let totalWeight = 0;
+
+            for(let i=0; i<unitInputs.length; i++) {
+                if(unitInputs[i].value || descInputs[i].value) {
+                    rows.push([
+                        unitInputs[i].value,
+                        typeInputs[i].value,
+                        hmInputs[i].checked ? "X" : "",
+                        descInputs[i].value,
+                        weightInputs[i].value
+                    ]);
+                    totalWeight += Number(weightInputs[i].value) || 0;
+                }
+            }
+            rows.push(["", "", "", "GRAND TOTAL", totalWeight + " lbs"]);
+
+            doc.autoTable({
+                startY: y,
+                head: [columns],
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 9, cellPadding: 2 },
+            });
+
+            y = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(7);
+            doc.setTextColor(100);
+            const disclaimer = "RECEIVED, subject to individually determined rates or contracts that have been agreed upon in writing between the carrier and shipper, if applicable.";
+            doc.text(disclaimer, 10, y, { maxWidth: 190, align: "justify" });
+            
+            y += 20;
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            doc.setTextColor(0);
+            doc.setFontSize(9);
+
+            doc.line(10, y+15, 70, y+15);
+            doc.text("SHIPPER SIGNATURE / DATE", 10, y+20);
+            doc.line(80, y+15, 140, y+15);
+            doc.text("CARRIER SIGNATURE / DATE", 80, y+20);
+            doc.line(150, y+15, 200, y+15);
+            doc.text("CONSIGNEE SIGNATURE / DATE", 150, y+20);
+
+            doc.save(`BOL-${val('bolNumber')}.pdf`);
+        }
+
+        async function generateInvoice() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const val = (id) => document.getElementById(id).value || '';
+            const navy = [0, 51, 102];
+            const orange = [43, 108, 176];
+
+            // Header
+            doc.setFillColor(...navy);
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text("FREIGHT INVOICE", 190, 15, { align: "right" });
+            doc.setFontSize(10);
+            doc.text("CLEAR LINE LOGISTICS LLC", 190, 22, { align: "right" });
+            
+            // Logo placeholder
+            doc.setTextColor(orange[0], orange[1], orange[2]);
+            doc.setFontSize(14);
+            doc.text("CLEAR LINE LOGISTICS", 10, 18);
+
+            // Invoice Details Top Right
+            doc.setTextColor(0);
+            doc.setFontSize(10);
+            doc.text(`Invoice #:`, 140, 40); doc.text(val('invNumber'), 200, 40, {align:'right'});
+            doc.text(`Date:`, 140, 45); doc.text(val('date'), 200, 45, {align:'right'});
+            doc.text(`Due Date:`, 140, 50); doc.text(val('dueDate'), 200, 50, {align:'right'});
+            doc.text(`Terms:`, 140, 55); doc.text(val('paymentTerms'), 200, 55, {align:'right'});
+
+            let y = 65;
+
+            // Bill To / Remit To
+            doc.setFillColor(240, 240, 240);
+            doc.rect(10, y, 90, 30); // Bill To
+            doc.rect(110, y, 90, 30); // Remit To
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("BILL TO", 12, y+5);
+            doc.text("REMIT TO", 112, y+5);
+            doc.setFont("helvetica", "normal");
+            
+            doc.text(val('billToName'), 12, y+10);
+            doc.text(val('billToAddress'), 12, y+15);
+            doc.text(`${val('billToCity')}, ${val('billToState')} ${val('billToZip')}`, 12, y+20);
+
+            doc.text(val('remitToName'), 112, y+10);
+            doc.text(val('remitToAddress'), 112, y+15);
+            doc.text(`${val('remitToCity')}, ${val('remitToState')} ${val('remitToZip')}`, 112, y+20);
+
+            y += 40;
+
+            // Shipment Info Summary
+            doc.setFont("helvetica", "bold");
+            doc.text("SHIPMENT DETAILS", 10, y);
+            doc.line(10, y+1, 200, y+1);
+            y += 8;
+            doc.setFont("helvetica", "normal");
+            doc.text(`Origin: ${val('shipperCity')}, ${val('shipperState')}`, 10, y);
+            doc.text(`Dest: ${val('consigneeCity')}, ${val('consigneeState')}`, 80, y);
+            doc.text(`BOL #: ${val('bolNumber')}`, 150, y);
+
+            y += 15;
+
+            // Charges Table
+            const columns = ["Description", "Quantity", "Rate", "Amount"];
+            const rows = [];
+            let grandTotal = 0;
+
+            const chargeDescs = document.querySelectorAll('.charge-desc');
+            const chargeQtys = document.querySelectorAll('.charge-qty');
+            const chargeRates = document.querySelectorAll('.charge-rate');
+
+            for(let i=0; i<chargeDescs.length; i++) {
+                if(chargeDescs[i].value) {
+                    const qty = parseFloat(chargeQtys[i].value) || 0;
+                    const rate = parseFloat(chargeRates[i].value) || 0;
+                    const amt = qty * rate;
+                    grandTotal += amt;
+                    rows.push([
+                        chargeDescs[i].value,
+                        qty.toString(),
+                        "$" + rate.toFixed(2),
+                        "$" + amt.toFixed(2)
+                    ]);
+                }
+            }
+            
+            rows.push(["", "", "TOTAL", "$" + grandTotal.toFixed(2)]);
+
+            doc.autoTable({
+                startY: y,
+                head: [columns],
+                body: rows,
+                theme: 'striped',
+                headStyles: { fillColor: navy },
+                columnStyles: { 3: { halign: 'right' } }
+            });
+
+            // Save
+            doc.save(`Invoice-${val('invNumber')}.pdf`);
+        }
+
+        async function generateRateCon() {
+             const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const val = (id) => document.getElementById(id).value || '';
+            const navy = [0, 51, 102];
+
+            // Header
+            doc.setFillColor(...navy);
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.setFont("helvetica", "bold");
+            doc.text("RATE CONFIRMATION", 105, 15, { align: "center" });
+            
+            doc.setTextColor(0);
+            doc.setFontSize(10);
+            let y = 40;
+
+            // Header Info
+            doc.text(`Rate Con #: ${val('rcNumber')}`, 10, y);
+            doc.text(`Date: ${val('date')}`, 150, y);
+            y += 10;
+            
+            // Carrier & Broker
+            doc.rect(10, y, 90, 25);
+            doc.rect(110, y, 90, 25);
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("CARRIER", 12, y+5);
+            doc.text("BROKER", 112, y+5);
+            doc.setFont("helvetica", "normal");
+            
+            doc.text(val('carrierName'), 12, y+10);
+            doc.text(`MC: ${val('carrierMC')}`, 12, y+15);
+            doc.text(`Phone: ${val('carrierPhone')}`, 12, y+20);
+
+            doc.text("Clear Line Logistics LLC", 112, y+10);
+            doc.text("100 Logistics Way, Atlanta GA", 112, y+15);
+            doc.text("Ph: (800) 555-0199", 112, y+20);
+
+            y += 30;
+
+            // Driver & Equipment Details
+            doc.rect(10, y, 190, 15);
+            doc.setFont("helvetica", "bold");
+            doc.text("DRIVER & EQUIPMENT", 12, y+5);
+            doc.setFont("helvetica", "normal");
+            
+            // Grid layout for driver info
+            doc.text(`Driver: ${val('driverName')}`, 12, y+11);
+            doc.text(`Phone: ${val('driverPhone')}`, 60, y+11);
+            doc.text(`Truck #: ${val('truckNumber')}`, 110, y+11);
+            doc.text(`Trailer #: ${val('trailerNumber')}`, 155, y+11);
+
+            y += 25;
+
+            // Load Details (Pickup / Drop)
+            doc.setFont("helvetica", "bold");
+            doc.text("LOAD DETAILS", 10, y);
+            doc.line(10, y+1, 200, y+1);
+            y += 10;
+
+            doc.text("PICKUP", 10, y);
+            doc.text("DELIVERY", 110, y);
+            doc.setFont("helvetica", "normal");
+            y += 5;
+            
+            // Pickup
+            doc.text(val('shipperName'), 10, y);
+            doc.text(`${val('shipperCity')}, ${val('shipperState')}`, 10, y+5);
+            doc.text(`Date: ${val('pickupDate')} ${val('pickupTime')}`, 10, y+10);
+
+            // Delivery
+            doc.text(val('consigneeName'), 110, y);
+            doc.text(`${val('consigneeCity')}, ${val('consigneeState')}`, 110, y+5);
+            doc.text(`Date: ${val('deliveryDate')} ${val('deliveryTime')}`, 110, y+10);
+
+            y += 20;
+
+            // Special Instructions
+            const specInstr = val('specialInstructions');
+            if (specInstr) {
+                doc.setFont("helvetica", "bold");
+                doc.text("SPECIAL INSTRUCTIONS", 10, y);
+                doc.setFont("helvetica", "normal");
+                doc.text(specInstr, 10, y+5, { maxWidth: 190 });
+                // Calculate height based on text length
+                const splitText = doc.splitTextToSize(specInstr, 190);
+                y += (splitText.length * 5) + 15;
+            }
+
+            // Freight Details Table
+            doc.setFont("helvetica", "bold");
+            doc.text("FREIGHT DETAILS", 10, y);
+            y += 5;
+
+            const freightCols = ["Qty", "Type", "Weight", "Description"];
+            const freightRows = [];
+            const fUnits = document.querySelectorAll('.freight-units');
+            const fTypes = document.querySelectorAll('.freight-type');
+            const fDescs = document.querySelectorAll('.freight-desc');
+            const fWeights = document.querySelectorAll('.freight-weight');
+
+            for(let i=0; i<fUnits.length; i++) {
+                if(fUnits[i].value || fDescs[i].value) {
+                    freightRows.push([
+                        fUnits[i].value,
+                        fTypes[i].value,
+                        fWeights[i].value + " lbs",
+                        fDescs[i].value
+                    ]);
+                }
+            }
+
+            if (freightRows.length === 0) {
+                 freightRows.push(["-", "-", "-", "No freight details provided"]);
+            }
+
+            doc.autoTable({
+                startY: y,
+                head: [freightCols],
+                body: freightRows,
+                theme: 'grid',
+                headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 9, cellPadding: 3 },
+                margin: { left: 10, right: 10 }
+            });
+
+            y = doc.lastAutoTable.finalY + 15;
+            
+            // Rates Table
+             // Charges Table
+            const columns = ["Description", "Rate", "Amount"];
+            const rows = [];
+            let grandTotal = 0;
+
+            const chargeDescs = document.querySelectorAll('.charge-desc');
+            const chargeQtys = document.querySelectorAll('.charge-qty');
+            const chargeRates = document.querySelectorAll('.charge-rate');
+
+            for(let i=0; i<chargeDescs.length; i++) {
+                if(chargeDescs[i].value) {
+                    const qty = parseFloat(chargeQtys[i].value) || 0;
+                    const rate = parseFloat(chargeRates[i].value) || 0;
+                    const amt = qty * rate;
+                    grandTotal += amt;
+                    rows.push([
+                        chargeDescs[i].value,
+                        "$" + rate.toFixed(2),
+                        "$" + amt.toFixed(2)
+                    ]);
+                }
+            }
+             rows.push(["TOTAL AGREED RATE", "", "$" + grandTotal.toFixed(2)]);
+
+             doc.autoTable({
+                startY: y,
+                head: [columns],
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: navy },
+                columnStyles: { 2: { halign: 'right' } }
+            });
+
+            // Remittance Info
+            const remitName = val('remitName');
+            if (remitName) {
+                y = doc.lastAutoTable.finalY + 10;
+                
+                // Ensure we don't run off page
+                if (y > 260) {
+                    doc.addPage();
+                    y = 20;
+                }
+
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.1);
+                doc.setFillColor(245, 247, 250); // Very light blue/gray
+                doc.rect(10, y, 190, 30, 'F');
+                doc.rect(10, y, 190, 30, 'S'); // Border
+                
+                // Header strip
+                doc.setFillColor(...navy);
+                doc.rect(10, y, 190, 7, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text("REMITTANCE & PAYMENT INSTRUCTIONS", 105, y+5, { align: "center" });
+                
+                // Content
+                doc.setTextColor(0);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                
+                doc.text("Send Invoices To:", 15, y+13);
+                doc.setFont("helvetica", "bold");
+                doc.text(remitName, 45, y+13);
+                doc.setFont("helvetica", "normal");
+                
+                doc.text("Email Invoices:", 15, y+19);
+                doc.setFont("helvetica", "bold");
+                doc.text(val('remitEmail'), 45, y+19);
+                doc.setFont("helvetica", "normal");
+
+                doc.text("Payment Terms:", 110, y+13);
+                doc.setFont("helvetica", "bold");
+                doc.text(val('remitPaymentTerms'), 140, y+13);
+                doc.setFont("helvetica", "normal");
+                
+                doc.text("Mailing Address:", 110, y+19);
+                doc.text(val('remitAddress'), 140, y+19, { maxWidth: 55 });
+            }
+
+            // Start New Page for Terms
+            doc.addPage();
+            y = 20;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("STANDARD TERMS AND CONDITIONS", 105, y, { align: "center" });
+            y += 10;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8); // Small legible font for legal text
+
+            const terms = [
+                "1. Carrier agrees it is a motor carrier engaged in the transportation of goods for compensation. Carrier further agrees it is in good standing with state and federal agencies that govern its conduct, it has authority to operate as a motor carrier, it meets all insurance requirements for the shipment, and it is able to safely haul the commodity listed on the product description.",
+                
+                "2. Carrier agrees ClearLine Logistics LLC is not a motor carrier, but has provided brokerage services related to the shipment. These services may include selling or otherwise arranging for transportation of the shipment by the Carrier for compensation. Carrier acknowledges that ClearLine Logistics LLC, at no time, will take possession of the shipment or transport it.",
+                
+                "3. Carrier agrees that an authorized Carrier representative has read and agrees to the terms of ClearLine Logistics LLC's Motor Carrier/Broker Agreement located on ClearLine Logistics LLC's website home page. The link for the Motor Carrier/Broker Agreement can be found on the front page. This Rate Confirmation constitutes an addendum to that Agreement. Unless the Carrier provides ClearLine Logistics LLC with written objections to its terms, prior to accepting shipment, at the earlier of within twenty-four (24) hours of receipt or upon work being initiated, Carrier is deemed to have agreed to the terms in the Carrier/Broker Agreement and in this Rate Confirmation.",
+                
+                "4. ClearLine Logistics LLC agrees to pay the rates and charges shown above and no different tariff rate or schedule of rates apply.",
+                
+                "5. This rate is contingent upon successful and on-time completion of all load terms presented to Carrier and rate may be subject to reduction if carrier fails to complete any shipment terms and conditions. Rate may be reduced if load picks up or delivers after originally scheduled time and date. Failure to haul the contracted weight may result in a rate deduction. If Carrier cancels a load that has already been tendered, Carrier can be subject to a reduction up to $250. Failure to adhere to any term or condition may also result in Carrier being reported to online loadboards, such as Internet Truckstop, DATS, etc.",
+                
+                "6. Carrier agrees that it will not re-broker, assign, subcontract, or interline shipments without ClearLine Logistics LLC's prior written consent and that if Carrier violates this provision Carrier forfeits its right to be paid for the transportation services in this Rate Confirmation.",
+                
+                "7. Carrier assumes responsibility and is liable for any loss or damage to the shipment or related to or arising out of the transportation of this shipment.",
+                
+                "8. Accessorial charges (including but not limited to labor, detention, and/or layover charges) must be authorized and approved prior to or at time of occurrence. ClearLine Logistics LLC will not provide any reimbursement of any non, prior-approved accessorial charges. The Carrier is liable for labor charges, facility charges, crane charges and/or any other loss which is the result of Carrier missing a pickup or delivery appointment time. Carrier shall ensure the bill of lading is notated either when handling is required or when detention occurs, that the Carrier obtains applicable receipts, and that both the bill of lading and receipts are included as supporting documents with the Carrier's invoice. All overage, shortage, and damage must be reported to ClearLine Logistics LLC immediately, at time of occurrence, and noted on the bill of lading.",
+                
+                "9. ClearLine Logistics LLC's Customer requires that Carrier provide tracking updates for this shipment, through ClearLine Logistics LLC, around the following events: arrival at and departure from Shipper(s) within thirty (30) minutes of occurrence; a minimum of one check call per day, prior to 10:00am, each day that Carrier is in possession of this shipment; and arrival at and departure from Receiver(s) within thirty (30) minutes of occurrence. Any problems or issues with the shipment must immediately be reported to ClearLine Logistics LLC.",
+                
+                "10. If Carrier is able to deliver, but refuses to deliver a shipment by the suggested delivery date and time, Carrier agrees to pay ClearLine Logistics LLC a minimum penalty of $50 for every hour after the suggested delivery time that the Carrier refuses to deliver the shipment.",
+                
+                "11. If there is damage to the cargo or other property, Carrier agrees to promptly assist and comply with all reasonable requests made by ClearLine Logistics LLC and/or its authorized representatives with respect to their investigation of the damage comply with all reasonable claim requests from ClearLine Logistics LLC. In such an instance, Carrier also agrees that ClearLine Logistics LLC may reduce the rate to offset damages. Carrier acknowledges that it is subject to suit for damage or loss to any cargo while the cargo is in Carrier's custody or control. Carrier agrees that any legal proceeding arising out of or in connection with this shipment shall be brought exclusively in the Sedgwick County District Court of Kansas or the United States District Court for the District of Kansas at Wichita, Kansas, and that the laws of the State of Kansas will apply.",
+                
+                "12. If any legal action, arbitration, or other proceeding is brought by ClearLine Logistics LLC against Carrier related to or arising out of the transportation of this shipment, the other transportation services provided by Carrier, or to otherwise enforce the provisions of this Agreement, ClearLine Logistics LLC shall be entitled to recover reasonable attorneys' fees and other costs incurred in that action, arbitration, or other proceeding if it shall prevail, in addition to any other relief to which ClearLine Logistics LLC may be entitled. ClearLine Logistics LLC will only be entitled to such attorneys' fees and other costs if the amount of the judgment entered in favor of ClearLine Logistics LLC in such action, arbitration, or other proceeding is in excess of the last tender made by the Carrier prior to the commencement of the action, arbitration, or other proceeding in which the judgment is rendered.",
+                
+                "13. Pursuant to the parties Motor Carrier/Broker Agreement, Carrier will provide an amount of active cargo insurance coverage sufficient to cover the loss or damage of any commodities and cargo carried. Carrier's cargo insurance policy must not exclude from coverage any commodities or cargo carried on this order. If Carrier's cargo insurance policy contains a schedule of covered vehicles, Carrier will not transport any cargo on this shipment using a vehicle that is not listed as a scheduled vehicle on Carrier's cargo insurance policy.",
+                
+                "14. Carrier authorizes Broker to offset the full amount of any claim with all monies owed to the carrier.",
+                
+                "15. In the event that any provision in or obligation under this Agreement shall be deemed invalid, illegal, or unenforceable in any jurisdiction, the validity, legality, and enforceability of other provisions in, or obligations under, this Agreement shall not in any way be affected or impaired thereby.",
+                
+                "16. ClearLine Logistics LLC does not pay detention, layover, or truck order not used (TONU) fees, but will address with customer on a case-by-case basis.",
+                
+                "17. Failure to abide by any of the terms and conditions in this agreement may result in a deduction or penalty added."
+            ];
+
+            // Render Terms Text
+            terms.forEach(term => {
+                const splitTerm = doc.splitTextToSize(term, 190);
+                // Check if we need another page break
+                if (y + (splitTerm.length * 4) > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(splitTerm, 10, y);
+                y += (splitTerm.length * 3.5) + 3; // Line height + spacing between points
+            });
+
+            // Extra Space before Signature
+            if (y > 250) {
+                doc.addPage();
+                y = 40;
+            } else {
+                y += 20;
+            }
+
+            // Bottom Signature
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text("AGREED AND ACCEPTED BY CARRIER:", 10, y);
+            y += 20;
+
+            doc.line(10, y, 100, y);
+            doc.text("Authorized Signature", 10, y+5);
+            
+            doc.line(120, y, 180, y);
+            doc.text("Date", 120, y+5);
+
+            y += 15;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("Please sign and return to ClearLine Logistics LLC to acknowledge receipt and acceptance of this Rate Confirmation.", 10, y);
+
+            doc.save(`RateCon-${val('rcNumber')}.pdf`);
+        }
+
+        // Access Control Logic
+        function checkAccess() {
+            const code = document.getElementById('accessCode').value.toLowerCase().trim();
+            const portal = document.getElementById('access-portal');
+            const app = document.getElementById('app-container');
+            const error = document.getElementById('access-error');
+
+            if (code === 'clearline') {
+                portal.classList.add('hidden');
+                app.classList.remove('hidden');
+                localStorage.setItem('cl_access', 'granted');
+            } else {
+                error.classList.remove('hidden');
+                document.getElementById('accessCode').value = '';
+                document.getElementById('accessCode').focus();
+            }
+        }
+
+        // Check for existing access session
+        window.onload = function() {
+            // Update current date display
+            const today = new Date();
+            document.getElementById('current-date').textContent = today.toLocaleDateString();
+            
+            // Check access status
+            if (localStorage.getItem('cl_access') === 'granted') {
+                document.getElementById('access-portal').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+            }
+        };
+
+        function logout() {
+            if (confirm("Are you sure you want to log out of the system?")) {
+                localStorage.removeItem('cl_access');
+                location.reload();
+            }
+        }
+    </script>
+</div> <!-- Close app-container -->
+</body>
+</html>
