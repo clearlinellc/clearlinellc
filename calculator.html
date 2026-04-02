@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiPay Pro | Secure Freight Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --navy: #0F172A; --charcoal: #374151; --safety-orange: #F97316; }
+        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .bg-navy { background-color: var(--navy); }
+        .text-orange { color: var(--safety-orange); }
+        .btn-orange { background-color: var(--safety-orange); transition: 0.2s; }
+        .btn-orange:hover { background-color: #ea580c; transform: translateY(-1px); }
+        
+        #access-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.5s ease;
+        }
+        .hidden-app { filter: blur(25px); pointer-events: none; opacity: 0; }
+        .unlock-anim { animation: unlock 0.7s forwards; }
+        @keyframes unlock {
+            from { filter: blur(25px); opacity: 0; transform: scale(0.98); }
+            to { filter: blur(0); opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="access-overlay">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center border border-slate-200">
+            <div class="bg-orange-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg rotate-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Authenticated Entry</h2>
+            <p class="text-slate-500 mb-8 text-sm uppercase tracking-widest font-semibold">Freight Brokerage Portal</p>
+            
+            <input type="text" id="pin-input" placeholder="Enter Access Code" 
+                   class="w-full text-center text-lg p-4 border-2 border-slate-100 rounded-2xl mb-2 focus:border-orange-500 outline-none transition-all font-mono"
+                   onkeydown="if(event.key==='Enter') verifyPin()">
+            
+            <div id="error-msg" class="text-rose-500 text-xs font-bold mb-6 opacity-0">Invalid credentials. Access denied.</div>
+            
+            <button onclick="verifyPin()" class="w-full btn-orange text-white font-black py-4 rounded-2xl shadow-orange-500/20 shadow-xl tracking-widest">
+                AUTHORIZE ACCESS
+            </button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden-app p-4 md:p-8 max-w-6xl mx-auto">
+        <header class="bg-navy text-white p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b-4 border-orange-500">
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-black italic tracking-tighter">LOGIPAY <span class="text-orange">PRO</span></h1>
+                <div class="h-6 w-[1px] bg-slate-700 mx-2"></div>
+                <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Carrier Pay Calculator</span>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="window.location.reload()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold text-slate-300 transition">LOGOUT</button>
+                <button onclick="downloadPDF()" class="btn-orange px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2 text-sm">
+                    EXPORT PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span> Calculation Engine
+                </h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Total Load Revenue</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                            <input type="number" id="revenue" value="3800" oninput="calculate()" class="w-full p-4 pl-8 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-800 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Total Miles</label>
+                            <input type="number" id="miles" value="1200" oninput="calculate()" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-800 outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Fuel Price ($)</label>
+                            <input type="number" id="diesel" value="4.10" step="0.01" oninput="calculate()" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-800 outline-none focus:border-orange-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Truck MPG</label>
+                            <input type="number" id="mpg" value="6.5" step="0.1" oninput="calculate()" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-800 outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Broker Margin %</label>
+                            <input type="number" id="margin" value="15" oninput="calculate()" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-800 outline-none focus:border-orange-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Estimated Fuel Cost</p>
+                        <h3 class="text-4xl font-black text-slate-800" id="disp-fuel">$0.00</h3>
+                    </div>
+                    <div id="profit-card" class="bg-white p-8 rounded-[2rem] shadow-sm border-l-8 border-emerald-500 transition-all duration-300">
+                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Net Broker Profit</p>
+                        <div class="flex items-baseline gap-2">
+                            <h3 class="text-4xl font-black text-slate-800" id="disp-profit">$0.00</h3>
+                            <span class="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg" id="disp-margin-pct">15%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-navy rounded-[2.5rem] p-12 text-white shadow-2xl relative overflow-hidden border border-slate-800">
+                    <div class="relative z-10">
+                        <p class="text-orange font-bold uppercase tracking-[0.3em] text-xs mb-4">Final Carrier Payout</p>
+                        <h2 class="text-8xl font-black mb-8 tracking-tighter" id="disp-carrier">$0.00</h2>
+                        <div class="grid grid-cols-2 gap-8 py-8 border-t border-slate-800">
+                            <div>
+                                <p class="text-slate-500 text-[10px] font-bold uppercase mb-1 tracking-wider">Rate Per Mile</p>
+                                <p class="text-2xl font-bold text-white" id="disp-rpm">$0.00</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 text-[10px] font-bold uppercase mb-1 tracking-wider">Estimated Overhead</p>
+                                <p class="text-2xl font-bold text-white" id="disp-total-costs">$0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <svg class="absolute -right-20 -bottom-20 opacity-[0.03] w-96 h-96 text-white transform -rotate-12" fill="currentColor" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_KEY = "clearline"; // Your custom access code
+
+        function verifyPin() {
+            const input = document.getElementById('pin-input');
+            const overlay = document.getElementById('access-overlay');
+            const app = document.getElementById('main-app');
+            const error = document.getElementById('error-msg');
+
+            if (input.value.toLowerCase().trim() === AUTH_KEY) {
+                overlay.style.opacity = '0';
+                overlay.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    app.classList.remove('hidden-app');
+                    app.classList.add('unlock-anim');
+                    calculate(); // Initialize calculation
+                }, 500);
+            } else {
+                error.style.opacity = '1';
+                input.classList.add('border-rose-500');
+                setTimeout(() => {
+                    input.classList.remove('border-rose-500');
+                }, 1000);
+            }
+        }
+
+        function calculate() {
+            const rev = parseFloat(document.getElementById('revenue').value) || 0;
+            const miles = parseFloat(document.getElementById('miles').value) || 0;
+            const diesel = parseFloat(document.getElementById('diesel').value) || 0;
+            const mpg = parseFloat(document.getElementById('mpg').value) || 1;
+            const marginPct = parseFloat(document.getElementById('margin').value) || 0;
+
+            const fuelCost = (miles / mpg) * diesel;
+            const brokerProfit = rev * (marginPct / 100);
+            const carrierPay = rev - brokerProfit - fuelCost;
+            const rpm = miles > 0 ? (carrierPay / miles) : 0;
+
+            document.getElementById('disp-fuel').innerText = `$${fuelCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('disp-profit').innerText = `$${brokerProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('disp-margin-pct').innerText = `${marginPct}%`;
+            document.getElementById('disp-carrier').innerText = `$${carrierPay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('disp-rpm').innerText = `$${rpm.toFixed(2)}`;
+            document.getElementById('disp-total-costs').innerText = `$${fuelCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            const profitCard = document.getElementById('profit-card');
+            if (marginPct < 10) {
+                profitCard.classList.replace('border-emerald-500', 'border-rose-500');
+            } else {
+                profitCard.classList.replace('border-rose-500', 'border-emerald-500');
+            }
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const rev = document.getElementById('revenue').value;
+            const carrier = document.getElementById('disp-carrier').innerText;
+            const profit = document.getElementById('disp-profit').innerText;
+            const rpm = document.getElementById('disp-rpm').innerText;
+
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.text("LOGIPAY PRO RATE SHEET", 20, 25);
+            
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(12);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 55);
+            
+            doc.setDrawColor(249, 115, 22);
+            doc.setLineWidth(1);
+            doc.line(20, 60, 190, 60);
+
+            doc.setFontSize(14);
+            doc.text(`Total Gross Revenue: $${rev}`, 20, 80);
+            doc.text(`Broker Profit: ${profit}`, 20, 95);
+            doc.setTextColor(249, 115, 22);
+            doc.setFontSize(18);
+            doc.text(`CARRIER PAYOUT: ${carrier}`, 20, 115);
+            
+            doc.setTextColor(100, 116, 139);
+            doc.setFontSize(10);
+            doc.text(`Average Rate Per Mile: ${rpm}`, 20, 130);
+
+            doc.save(`RateBreakdown_${Date.now()}.pdf`);
+        }
+    </script>
+</body>
+</html>

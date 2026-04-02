@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mileage Tracker + Map PDF</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root { --primary: #2563eb; --success: #059669; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; margin: 0; }
+        
+        /* Access Code Overlay */
+        #access-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(241, 245, 249, 0.98);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .access-card {
+            background: white; padding: 40px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
+        }
+        #access-input {
+            padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;
+            font-size: 16px; margin-top: 15px; width: 200px; text-align: center;
+        }
+        #access-input:focus { outline: none; border-color: var(--primary); }
+
+        /* Main Container */
+        .container { 
+            background: white; max-width: 1100px; width: 100%; 
+            display: grid; grid-template-columns: 380px 1fr; gap: 25px; 
+            padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: none; /* Hidden until access granted */
+        }
+        
+        @media (max-width: 950px) { .container { grid-template-columns: 1fr; } }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-logout { background: #f1f5f9; color: var(--danger); padding: 8px 12px; font-size: 12px; width: auto; border: 1px solid #e2e8f0; }
+        .btn-logout:hover { background: #fee2e2; }
+
+        .input-box { margin-bottom: 15px; }
+        label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px; color: #64748b; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 14px; transition: border 0.2s; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        .stop-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .btn { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; width: 100%; padding: 14px; transition: 0.2s; font-size: 14px; }
+        .btn-calc { background: var(--primary); color: white; margin-top: 10px; }
+        .btn-pdf { background: var(--success); color: white; margin-top: 10px; display: none; }
+        .btn-add { background: #f1f5f9; color: var(--primary); font-size: 12px; margin-bottom: 15px; border: 1px dashed var(--primary); }
+        .btn-remove { background: #fee2e2; color: #ef4444; width: 45px; }
+        
+        #map-container { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        #map { height: 450px; width: 100%; }
+        
+        .results-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat { background: #ffffff; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
+        .stat b { display: block; font-size: 24px; color: var(--primary); margin-top: 5px; }
+        .error-msg { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; font-weight: 600; text-align: center; }
+        
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="access-overlay">
+    <div class="access-card">
+        <h2 style="margin:0; color: var(--primary);">System Locked</h2>
+        <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Enter access code to continue</p>
+        <input type="password" id="access-input" placeholder="••••••••">
+        <p id="access-error" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;">Invalid Access Code</p>
+    </div>
+</div>
+
+<div id="loading-overlay">Generating PDF & Capturing Map...</div>
+
+<div class="container" id="main-content">
+    <div class="controls">
+        <div class="header-flex">
+            <h2 style="margin:0; color: var(--primary);">Trip Dispatch</h2>
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+        </div>
+        
+        <div class="input-box">
+            <label>Date of Service</label>
+            <input type="date" id="tripDate">
+        </div>
+
+        <div class="input-box">
+            <label>Start Location</label>
+            <input type="text" id="start" placeholder="City, State" value="Dayton, OH">
+        </div>
+
+        <div id="additionalStops"></div>
+        <button class="btn btn-add" onclick="addNewStopField()">+ Add Additional Stop</button>
+
+        <div class="input-box">
+            <label>Destination</label>
+            <input type="text" id="end" placeholder="City, State" value="Columbus, OH">
+        </div>
+
+        <div style="display:flex; gap:10px">
+            <div class="input-box" style="flex:1">
+                <label>Rate ($/mi)</label>
+                <input type="number" id="rate" value="0.67" step="0.01">
+            </div>
+            <div class="input-box" style="flex:1">
+                <label>Fees ($)</label>
+                <input type="number" id="fees" value="0">
+            </div>
+        </div>
+
+        <button class="btn btn-calc" id="calcBtn" onclick="runRouteCalculation()">Calculate Mileage</button>
+        <button class="btn btn-pdf" id="pdfBtn" onclick="generatePDFWithMap()">Download PDF with Map</button>
+        <div id="errorMsg" class="error-msg"></div>
+    </div>
+
+    <div class="display">
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+        <div class="results-panel">
+            <div class="stat">Distance<b id="resMiles">0.00 mi</b></div>
+            <div class="stat">Total Due<b id="resCost">$0.00</b></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Access Code Logic
+    const accessInput = document.getElementById('access-input');
+    const accessOverlay = document.getElementById('access-overlay');
+    const mainContent = document.getElementById('main-content');
+    const accessError = document.getElementById('access-error');
+
+    accessInput.addEventListener('input', () => {
+        if (accessInput.value === 'clearline') {
+            accessOverlay.style.display = 'none';
+            mainContent.style.display = 'grid';
+            accessInput.value = ''; // Clear input for next time
+            setTimeout(() => { map.invalidateSize(); }, 100);
+        } else if (accessInput.value.length >= 9) {
+            accessError.style.display = 'block';
+        } else {
+            accessError.style.display = 'none';
+        }
+    });
+
+    function logout() {
+        mainContent.style.display = 'none';
+        accessOverlay.style.display = 'flex';
+        accessError.style.display = 'none';
+    }
+
+    // Initialize Map
+    const map = L.map('map', { preferCanvas: true }).setView([39.82, -98.57], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        crossOrigin: true 
+    }).addTo(map);
+    
+    let activeRoute;
+    let tripData = {}; 
+
+    document.getElementById('tripDate').valueAsDate = new Date();
+
+    function addNewStopField() {
+        const div = document.createElement('div');
+        div.className = 'stop-row';
+        div.innerHTML = `<input type="text" class="mid-stop" placeholder="City, State">
+                         <button class="btn btn-remove" onclick="this.parentElement.remove()">×</button>`;
+        document.getElementById('additionalStops').appendChild(div);
+    }
+
+    async function getCoords(query) {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            return data.length > 0 ? { lon: data[0].lon, lat: data[0].lat } : null;
+        } catch (e) { return null; }
+    }
+
+    async function runRouteCalculation() {
+        const errorEl = document.getElementById('errorMsg');
+        const calcBtn = document.getElementById('calcBtn');
+        errorEl.style.display = 'none';
+        calcBtn.innerText = "Routing...";
+        
+        const points = [document.getElementById('start').value];
+        document.querySelectorAll('.mid-stop').forEach(i => { if(i.value) points.push(i.value); });
+        points.push(document.getElementById('end').value);
+
+        const coords = await Promise.all(points.map(p => getCoords(p)));
+        const validCoords = coords.filter(c => c !== null);
+
+        if (validCoords.length < points.length) {
+            errorEl.innerText = "Could not find all locations. Check spelling.";
+            errorEl.style.display = 'block';
+            calcBtn.innerText = "Calculate Mileage";
+            return;
+        }
+
+        const coordString = validCoords.map(c => `${c.lon},${c.lat}`).join(';');
+        try {
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+            const routeRes = await fetch(osrmUrl);
+            const routeData = await routeRes.json();
+
+            if (routeData.code === 'Ok') {
+                const miles = (routeData.routes[0].distance * 0.000621371).toFixed(2);
+                const rate = document.getElementById('rate').value;
+                const fees = parseFloat(document.getElementById('fees').value || 0);
+                const total = (miles * rate) + fees;
+
+                document.getElementById('resMiles').innerText = miles + ' mi';
+                document.getElementById('resCost').innerText = '$' + total.toFixed(2);
+                document.getElementById('pdfBtn').style.display = 'block';
+
+                tripData = { date: document.getElementById('tripDate').value, stops: points, miles, rate, fees, total: total.toFixed(2) };
+
+                if (activeRoute) map.removeLayer(activeRoute);
+                activeRoute = L.geoJSON(routeData.routes[0].geometry, { style: { color: '#2563eb', weight: 6 } }).addTo(map);
+                map.fitBounds(activeRoute.getBounds(), { padding: [50, 50] });
+            }
+        } catch (e) { alert("Routing error. Try again."); }
+        calcBtn.innerText = "Calculate Mileage";
+    }
+
+    async function generatePDFWithMap() {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFontSize(22); doc.setTextColor(37, 99, 235);
+        doc.text("Mileage & Route Report", 20, 20);
+        doc.setFontSize(12); doc.setTextColor(0, 0, 0);
+        doc.text(`Service Date: ${tripData.date}`, 20, 32);
+        doc.line(20, 36, 190, 36);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Route Sequence:", 20, 46);
+        doc.setFont("helvetica", "normal");
+        
+        let y = 54;
+        tripData.stops.forEach((s, i) => {
+            doc.text(`${i === 0 ? 'START' : (i === tripData.stops.length-1 ? 'END' : 'STOP')}: ${s}`, 25, y);
+            y += 8;
+        });
+
+        const mapContainer = document.getElementById('map-container');
+        const canvas = await html2canvas(mapContainer, {
+            useCORS: true, 
+            allowTaint: false,
+            ignoreElements: (node) => node.classList.contains('leaflet-control-container')
+        });
+        const imgData = canvas.toDataURL('image/png');
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Visual Route Map:", 20, y + 10);
+        doc.addImage(imgData, 'PNG', 20, y + 15, 170, 80); 
+
+        const finalY = y + 110;
+        doc.line(20, finalY, 190, finalY);
+        doc.text("Calculation Summary:", 20, finalY + 10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Distance: ${tripData.miles} mi  @  $${tripData.rate}/mi`, 25, finalY + 20);
+        doc.text(`Additional Fees: $${tripData.fees.toFixed(2)}`, 25, finalY + 30);
+        
+        doc.setFontSize(16); doc.setFont("helvetica", "bold");
+        doc.text(`TOTAL REIMBURSEMENT: $${tripData.total}`, 25, finalY + 45);
+
+        doc.save(`Mileage_Report_${tripData.date}.pdf`);
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+</script>
+</body>
+</html>
