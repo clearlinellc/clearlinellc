@@ -34,16 +34,26 @@
             </a>
 
             <!-- Desktop Menu -->
-            <div class="hidden md:flex space-x-8 items-center text-sm font-medium text-slate-300" id="nav-links">
-                <a href="#home" class="hover:text-blue-500 transition-colors">Home</a>
-                <a href="#services" class="hover:text-blue-500 transition-colors">Services</a>
-                <a href="#shippers" class="hover:text-blue-500 transition-colors">Shippers</a>
-                <a href="#carriers" class="hover:text-blue-500 transition-colors">Carriers</a>
-                <a href="#about" class="hover:text-blue-500 transition-colors">About</a>
-                <a href="CLgenerated.html" class="hover:text-blue-500 transition-colors">Generated</a>
-                <a href="#contact" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full transition-all shadow-lg hover:shadow-blue-500/30">Contact Us</a>
-            
-            </div>
+    <div class="hidden md:flex space-x-8 items-center text-sm font-medium text-slate-300" id="nav-links">
+    <a href="#home" class="hover:text-blue-500 transition-colors">Home</a>
+    <a href="#services" class="hover:text-blue-500 transition-colors">Services</a>
+    
+    <div class="relative group">
+        <button class="flex items-center gap-1 hover:text-blue-500 transition-colors cursor-pointer focus:outline-none">
+            Tools <i class="fa-solid fa-chevron-down text-[10px] group-hover:rotate-180 transition-transform duration-300"></i>
+        </button>
+        <div class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 border border-slate-100">
+            <a href="calculator.html" class="block px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Freight Calculator</a>
+            <a href="CLgenerated.html" class="block px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Documents</a>
+            <a href="driverpay.html" class="block px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">DriverPay</a>
+        </div>
+    </div>
+
+    <a href="#shippers" class="hover:text-blue-500 transition-colors">Shippers</a>
+    <a href="#carriers" class="hover:text-blue-500 transition-colors">Carriers</a>
+    <a href="#about" class="hover:text-blue-500 transition-colors">About</a>
+    <a href="#contact" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full transition-all shadow-lg hover:shadow-blue-500/30">Contact Us</a>
+</div>
 
             <!-- Mobile Menu Button -->
             <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
